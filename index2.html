@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .container .item {
+        background-color: blueviolet;
+    }
+
+    .maincontainer > .item {
+        background-color: red;
+        padding: 10px;
+        
+    }
+    .button {
+        background-color: green;
+        border: 100;
+        padding: 10px;
+    }
+    .button.active {    /*ใส่.หลังbutton และเว้นวรรคใน class button active */
+        background-color: gray
+    }
+    .button.danger {
+        background-color: red;
+    }
+    .item1 + .item2 {
+        background-color: yellow;
+    }
+    input[type=text]{
+        border: 1px solid black;
+        background-color: pink;
+        height: 10px;
+    }
+</style>
+<body>
+    <!-- 1. item เป็นลูกของ container -->
+    <div class="container">
+        Container
+        <div class="item">
+            item
+        </div>
+    </div>
+
+        <div class="footer-container">
+            Container
+        </div>
+
+    <!-- 2. item เป็นลูกของ container แค่ขั้นเดียว -->
+    <div class="maincontainer">
+        <div class="item">
+            item
+
+        <div class="item">
+            item1
+        </div>
+        <div class="item">
+            item2
+        </div>
+        <div class="item">
+            item3
+        </div>
+    </div>
+</div>
+ <!-- 3.มี class ลักษณะคล้ายกัน -->
+    <button class="button">ปุ่ม</button>
+    <button class="button active">ปุ่ม</button>
+    <button class="button danger">ปุ่ม</button>
+
+<!--4. เพื่อนกัน (adjacent)-->
+        <div class="item1">item1</div>
+        <div class="item2">item2</div>
+<!--5. attribute selector-->
+    <input type="text" name="username">
+    <input type="text" name="password">
+    <input type="text" name="email">
+
+</body>
+</html>
