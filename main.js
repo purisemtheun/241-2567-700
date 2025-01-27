@@ -176,7 +176,7 @@ newScores.forEach((ns) => {
 })
 */
 /*Object2
-
+*/
 
 let students = [
     {
@@ -210,28 +210,3 @@ let highscore_student = students.filter((s)=>{
 })
 console.log('student',student)
 console.log('highscore_student',highscore_student)
-*/
-let ages = [60,40,50,30];
-console.log(ages);
-ages.sort();//จัดเรียง
-console.log(ages);
-
-let name_list = ['John','Bob','Alice','Mary'];
-name_list.push('Mike');
-console.log(name_list.length);
-console.log(name_list[0]);
-console.log(name_list[1]);
-console.log(name_list[2]);
-
-for (let index =0; index < name_list.length; index++){
-    console.log('names list',name_list[index]);
-}
-
-
-//1.แทนที่ค่าใน array
-ages = [45,50];
-console.log('new age', ages);
-
-//2.ต่อ array
-ages.push(55);
-console.log('new age', ages);

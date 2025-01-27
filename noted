@@ -66,3 +66,113 @@
             background-repeat: no-repeat;
             background-position: top left;
         }
+
+
+
+         /*ส่วนcss*/
+        /*ตกแต่ง id class*/
+        @font-face {
+            font-family: 'Kanit';
+            src: url('./Kanit/Kanit-Regular.ttf'); /* font kanit*/     
+           }
+        body{
+            font-family: 'Kanit', sans-serif;
+        }
+        .container {
+            width: 100%;
+            max-width: 640;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: green ;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .header {
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-form {
+            width: 140px;
+        }
+        .flex {
+            display: flex;
+        }
+        .form-input{
+            margin-bottom: 10px;
+        }
+        input.form,textarea{
+            border: 1px solid #ccc;
+            width: 100%;
+        }
+        .center{
+            text-align: center;
+        }
+        .button{
+            border: 0;
+            width: 50%;
+            height: 40px;
+        }
+        
+        @media screen  and (max-width: 768px){
+            .flex {
+                flex-direction: column;
+            }
+            .header{
+                font-size: 24px;
+            }
+        }
+        
+        /*27/01/68 test2.html*/
+        <body>
+        <input type="radio" name="gender" value="ชาย" onchange="ChangeGender()"> ชาย
+        <input type="radio" name="gender" value="หญิง" onchange="ChangeGender()"> หญิง
+        <input type="radio" name="gender" value="อื่นๆ" onchange="ChangeGender()"> อื่นๆ
+        
+        <script>
+            function ChangeGender() {
+                //เลือก gender ทุก input ออกมา
+                let genderInputs = document.querySelectorAll("input[name=gender]");
+                let gender ='';
+                // ใครมี check อยู่หมายความว่าเพศนั้นถูกเลือก
+                for (let i = 0; i<genderInputs.length; i++) {
+                    if (genderInputs[i].checked) {
+                        gender=genderInputs[i].value
+                    }
+                }
+                console.log('select gender',gender);
+            }
+        </script>
+        
+        ชื่อ <input type="text" name="firstname" onkeyup="changeFirstName()">    
+    
+    <script>
+        function changeFirstName() {
+            // เลือกไปยัง input firstname
+        let firstnameDOM = document.querySelector('input[name="firstname"]')
+            //เอา value ของ firstname ออกมา
+            console.log('change firstname',firstnameDOM.value)
+        }
+    </script>
+    
+    <body>
+    <div
+    onmouseover="overitem()"
+    onmouseup="upitem()"
+    onmousedown="downitem()"
+
+    >click here</div>
+
+    <script>
+        function overitem(){
+            console.log('mouse over')
+        }
+        function upitem(){
+            console.log('mouse up')
+        }
+        function downitem(){
+            console.log('mouse down')
+        }
+
+
+     </script>
