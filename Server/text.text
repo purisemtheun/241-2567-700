@@ -1,0 +1,14 @@
+docker run -d -p 8070:80 nginx //run nginx on port 80
+docker ps --all // โชว์dockerที่ทำงานอยู่
+docker exec -it Container iD bash //เข้าถึง Container
+ls //list file
+pwd //print working directory
+cd //change directory
+cat //print file content
+cd .. //go backcd
+exit // exit Container
+
+docker system prune // remove all stopped container
+
+docker compose-up -d 
+docker compose-down 
