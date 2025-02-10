@@ -10,5 +10,8 @@ exit // exit Container
 
 docker system prune // remove all stopped container
 
-docker compose-up -d 
-docker compose-down 
+docker-compose up -d 
+docker-compose down 
+
+ืnpm i body-parser
+npx nodemon node index.js รันเซิฟเวอร์
