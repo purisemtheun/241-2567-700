@@ -14,4 +14,5 @@ docker-compose up -d
 docker-compose down 
 
 ืnpm i body-parser
-npx nodemon node index.js รันเซิฟเวอร์
+ รันเซิฟเวอร์
+npx nodemon node index.js
