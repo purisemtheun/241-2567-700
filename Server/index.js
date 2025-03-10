@@ -5,13 +5,24 @@ const app = express();
 const cors = require('cors');
 const port = 8000;
 
-// ใช้ body-parser middleware
 app.use(bodyParser.json());
 app.use(cors());
-let users = [];
+
 let conn = null;
 
-// ฟังก์ชันสำหรับเชื่อมต่อ MySQL
+const validateData = (userData) => {
+    let errors = [];
+    if (!userData.firstName) errors.push('กรุณากรอกชื่อ');
+    if (!userData.lastName) errors.push('กรุณากรอกนามสกุล');
+    if (!userData.age) errors.push('กรุณากรอกอายุ');
+    if (!userData.gender) errors.push('กรุณาเลือกเพศ');
+    if (!userData.interests || (Array.isArray(userData.interests) && userData.interests.length === 0)) {
+        errors.push('กรุณาเลือกความสนใจ');
+    }
+    if (!userData.description) errors.push('กรุณากรอกคำอธิบาย');
+    return errors;
+};
+
 const initMySQL = async () => {
     try {
         conn = await mysql.createConnection({
@@ -21,76 +32,100 @@ const initMySQL = async () => {
             database: 'webdb',
             port: 8820
         });
-        console.log('MySQL connected successfully');
+        await conn.ping(); // ✅ ตรวจสอบการเชื่อมต่อ MySQL (กัน Error Connection Lost)
+        console.log('✅ MySQL connected successfully');
     } catch (error) {
-        console.error('Error connecting to MySQL:', error.message); // แสดงข้อผิดพลาดจาก MySQL
-        process.exit(1); // หยุดการทำงานของแอปหากไม่สามารถเชื่อมต่อได้
+        console.error('❌ Error connecting to MySQL:', error.message);
+        process.exit(1);
     }
 };
 
-// ทดสอบการเชื่อมต่อกับฐานข้อมูล
-app.get('/testdbnew', async (req, res) => {
+// 📌 เพิ่มผู้ใช้ใหม่
+app.post('/users', async (req, res) => {
     try {
-        const [results] = await conn.query('SELECT * FROM users');
-        res.json(results);
+        let user = req.body;
+        const errors = validateData(user);
+        if (errors.length > 0) {
+            return res.status(400).json({
+                message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                errors: errors
+            });
+        }
+
+        // ✅ ถ้า `interests` เป็น Array ให้แปลงเป็น String (กัน Error ใน MySQL)
+        if (Array.isArray(user.interests)) {
+            user.interests = user.interests.join(', ');
+        }
+
+        const [results] = await conn.query('INSERT INTO users SET ?', user);
+
+        res.json({
+            message: '✅ Create user successfully',
+            data: results
+        });
     } catch (error) {
-        console.log('Error fetching users:', error.message); // แสดงข้อความข้อผิดพลาดที่เกิดจาก query
-        res.status(500).json({ error: 'Error fetching users' });
+        console.error('❌ Error message:', error.message);
+        res.status(500).json({
+            message: 'Something went wrong',
+            error: error.message
+        });
     }
 });
 
-// 📌 GET /users → ใช้สำหรับดึงข้อมูลผู้ใช้ทั้งหมด
+// 📌 ดึงข้อมูลผู้ใช้ทั้งหมด
 app.get('/users', async (req, res) => {
     try {
         const [results] = await conn.query('SELECT * FROM users');
         res.json(results);
     } catch (error) {
-        console.log('Error fetching users:', error.message); // แสดงข้อความข้อผิดพลาดที่เกิดจาก query
+        console.error('❌ Error fetching users:', error.message);
         res.status(500).json({ error: 'Error fetching users' });
     }
 });
 
-// 📌 POST /user → ใช้สำหรับสร้างผู้ใช้ใหม่
-app.post('/users', async (req, res) => {
+// 📌 ดึงข้อมูลผู้ใช้ตาม ID
+app.get('/users/:id', async (req, res) => {
     try {
-        let user = req.body; // รับข้อมูลจาก body ของ request
-        const [results] = await conn.query('INSERT INTO users SET ?', user); // ใช้ user แทน users
-        console.log('results', results);
-
-        res.json({
-            message: 'Create user successfully',
-            data: results[0] // ผลลัพธ์ที่คืนจาก query
-        });
+        let id = req.params.id;
+        const [results] = await conn.query('SELECT * FROM users WHERE id = ?', [id]);
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(results[0]);
     } catch (error) {
+        console.error('❌ Error:', error.message);
         res.status(500).json({
             message: 'Something went wrong',
-            error: error.message});
+            errorMessage: error.message
+        });
     }
 });
 
-// 📌 PUT /user/:id → ใช้สำหรับอัปเดตข้อมูลผู้ใช้
+// 📌 อัปเดตข้อมูลผู้ใช้
 app.put('/users/:id', async (req, res) => {
-    let id = parseInt(req.params.id); // แปลง id เป็นตัวเลข
-    let updateUser = req.body; // รับข้อมูลที่ต้องการอัปเดตจาก body ของ request
+    let id = parseInt(req.params.id);
+    let updateUser = req.body;
     try {
-        // คำสั่ง SQL สำหรับอัปเดตข้อมูลผู้ใช้
+        // ✅ ถ้า `interests` เป็น Array ให้แปลงเป็น String ก่อนอัปเดต
+        if (Array.isArray(updateUser.interests)) {
+            updateUser.interests = updateUser.interests.join(', ');
+        }
+
         const [results] = await conn.query(
             'UPDATE users SET ? WHERE id = ?',
             [updateUser, id]
         );
 
-        // ตรวจสอบว่าแถวที่ได้รับการอัปเดตมีหรือไม่
         if (results.affectedRows === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // ส่งผลลัพธ์หลังจากการอัปเดต
         res.json({
-            message: 'Update user successfully',
+            message: '✅ Update user successfully',
             data: updateUser
         });
     } catch (error) {
-        console.error('Error updating user:', error.message);
+        console.error('❌ Error updating user:', error.message);
         res.status(500).json({
             message: 'Something went wrong',
             errorMessage: error.message
@@ -98,22 +133,20 @@ app.put('/users/:id', async (req, res) => {
     }
 });
 
-
-// 📌 DELETE /user/:id → ใช้สำหรับลบผู้ใช้
+// 📌 ลบผู้ใช้
 app.delete('/users/:id', async (req, res) => {
     try {
-        let id = req.params.id; // รับค่า id จาก URL parameter
+        let id = parseInt(req.params.id);
         const [results] = await conn.query(
-            'DELETE from users WHERE id = ?', parseInt(id) // ใช้คำสั่ง SQL ที่ถูกต้อง
+            'DELETE FROM users WHERE id = ?', [id]
         );
 
-    
         res.json({
-            message: 'Delete user successfully',
-            data: results[0]
+            message: '✅ Delete user successfully',
+            data: results
         });
     } catch (error) {
-        console.error('error:', error.message);
+        console.error('❌ Error:', error.message);
         res.status(500).json({
             message: 'Something went wrong',
             errorMessage: error.message
@@ -121,29 +154,8 @@ app.delete('/users/:id', async (req, res) => {
     }
 });
 
-app.get('/users/:id', async (req, res) => {
-    try {
-        let id = req.params.id; // รับค่า id จาก URL parameter
-        const [results] = await conn.query('SELECT * FROM users WHERE id = ?', [id]); // ใช้คำสั่ง SQL ที่ถูกต้อง
-        if (results.length === 0) { 
-            return res.status(404).json({ message: 'User not found' }); // ถ้าไม่พบข้อมูล
-        }
-        res.json(results[0]); // ส่งผลลัพธ์แถวแรก
-    } catch (error) {
-        console.error('Error:', error.message);
-        let statusCode = error.statusCode || 500;
-        res.status(statusCode).json({
-            message: 'Something went wrong',
-            errorMessage: error.message
-        });
-    }
-});
-
-
-// เรียกใช้ server
+// 📌 เรียกใช้เซิร์ฟเวอร์
 app.listen(port, async () => {
-    await initMySQL(); // รันฟังก์ชัน initMySQL ก่อน
-    console.log('Http Server is running o n port ' + port); // แก้ไขการพิมพ์ให้ถูกต้อง
+    await initMySQL();
+    console.log(`✅ Http Server is running on port ${port}`);
 });
-
-

@@ -43,6 +43,17 @@
             height: 40px;
             background-color: blue;
         }
+        .massage {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #01ffd9;
+        }
+        .massage.success {
+            background-color: #00ff51;
+        }
+        .massage.danger {
+            background-color: #ff0000;
+        }
         
         @media screen  and (max-width: 768px){
             .flex {

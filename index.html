@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a href="user.html">Go to User management</a>
     <div class="container">
         <div class="header">
             Register form
@@ -31,13 +32,13 @@
             <div class="header-form">เพศ</div>
             <div class="flex">
                 <div>
-                    <input name="gender" type="radio"> ชาย
+                    <input name="gender" type="radio" value="ชาย"> ชาย
                 </div>
                 <div>
-                    <input name="gender" type="radio"> หญิง
+                    <input name="gender" type="radio" value="หญิง"> หญิง
                 </div>
                 <div>
-                    <input name="gender" type="radio"> อื่นๆ
+                    <input name="gender" type="radio" value="อื่นๆ"> อื่นๆ
                 </div>
             </div>
         </div>
@@ -60,11 +61,15 @@
             <textarea name="description"></textarea>
         </div>
 
+        <div class="message"></div> <!-- Ensure this element is present -->
+
         <div class="center"> 
             <button class="button" onclick="submitData()">ส่งข้อมูล</button>
         </div>    
     </div>
 
+    <!-- ย้าย <script> ไว้ที่นี่ -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="index.js"></script>
 </body>
 </html>
