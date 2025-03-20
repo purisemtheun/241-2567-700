@@ -1,161 +1,137 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
-const app = express();
 const cors = require('cors');
-const port = 8000;
+const app = express();
 
+const port = 8000;
 app.use(bodyParser.json());
 app.use(cors());
 
 let conn = null;
+const initMySQL = async () => {
+    conn = await mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: 'root',
+        database: 'webdb',
+        port: 8820
+    });
+};
 
 const validateData = (userData) => {
     let errors = [];
-    if (!userData.firstName) errors.push('กรุณากรอกชื่อ');
-    if (!userData.lastName) errors.push('กรุณากรอกนามสกุล');
-    if (!userData.age) errors.push('กรุณากรอกอายุ');
-    if (!userData.gender) errors.push('กรุณาเลือกเพศ');
-    if (!userData.interests || (Array.isArray(userData.interests) && userData.interests.length === 0)) {
+
+    if (!userData.firstname) {
+        errors.push('กรุณากรอกชื่อ');
+    } else if (userData.firstname.length > 255) {
+        errors.push('ชื่อต้องไม่เกิน 255 ตัวอักษร');
+    }
+    if (!userData.lastname) {
+        errors.push('กรุณากรอกนามสกุล');
+    } else if (userData.lastname.length > 255) {
+        errors.push('นามสกุลต้องไม่เกิน 255 ตัวอักษร');
+    }
+    if (!userData.age) {
+        errors.push('กรุณากรอกอายุ');
+    } else if (isNaN(userData.age)) {
+        errors.push('อายุต้องเป็นตัวเลข');
+    }
+    if (!userData.gender) {
+        errors.push('กรุณาเลือกเพศ');
+    }
+    if (!userData.interests || (Array.isArray(userData.interests) && userData.interests.length === 0) || (typeof userData.interests === 'string' && userData.interests.trim() === '')) {
         errors.push('กรุณาเลือกความสนใจ');
     }
-    if (!userData.description) errors.push('กรุณากรอกคำอธิบาย');
+    if (!userData.description) {
+        errors.push('กรุณากรอกคำอธิบาย');
+    }
     return errors;
 };
 
-const initMySQL = async () => {
-    try {
-        conn = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'root',
-            database: 'webdb',
-            port: 8820
-        });
-        await conn.ping(); // ✅ ตรวจสอบการเชื่อมต่อ MySQL (กัน Error Connection Lost)
-        console.log('✅ MySQL connected successfully');
-    } catch (error) {
-        console.error('❌ Error connecting to MySQL:', error.message);
-        process.exit(1);
-    }
-};
-
-// 📌 เพิ่มผู้ใช้ใหม่
-app.post('/users', async (req, res) => {
-    try {
-        let user = req.body;
-        const errors = validateData(user);
-        if (errors.length > 0) {
-            return res.status(400).json({
-                message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-                errors: errors
-            });
-        }
-
-        // ✅ ถ้า `interests` เป็น Array ให้แปลงเป็น String (กัน Error ใน MySQL)
-        if (Array.isArray(user.interests)) {
-            user.interests = user.interests.join(', ');
-        }
-
-        const [results] = await conn.query('INSERT INTO users SET ?', user);
-
-        res.json({
-            message: '✅ Create user successfully',
-            data: results
-        });
-    } catch (error) {
-        console.error('❌ Error message:', error.message);
-        res.status(500).json({
-            message: 'Something went wrong',
-            error: error.message
-        });
-    }
-});
-
-// 📌 ดึงข้อมูลผู้ใช้ทั้งหมด
+// path = GET /users สำหรับ get users ทั้งหมดที่บันทึกไว้
 app.get('/users', async (req, res) => {
     try {
         const [results] = await conn.query('SELECT * FROM users');
         res.json(results);
     } catch (error) {
-        console.error('❌ Error fetching users:', error.message);
-        res.status(500).json({ error: 'Error fetching users' });
+        console.error('error: ', error.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้', errorMessage: error.message });
     }
 });
 
-// 📌 ดึงข้อมูลผู้ใช้ตาม ID
+// path = POST /users สำหรับสร้าง users ใหม่บันทึกเข้าไป
+app.post('/users', async (req, res) => {
+    try {
+        let user = req.body;
+        const errors = validateData(user);
+        if (errors.length > 0) {
+            return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน', errors: errors });
+        }
+        const [results] = await conn.query('INSERT INTO users SET ?', user);
+        res.json({ message: 'สร้างผู้ใช้สำเร็จ', data: results });
+    } catch (error) {
+        console.error('error message: ', error.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูลผู้ใช้', errorMessage: error.message });
+    }
+});
+
+// path = GET /users/:id สำหรับดึง users รายคนออกมา
 app.get('/users/:id', async (req, res) => {
     try {
-        let id = req.params.id;
-        const [results] = await conn.query('SELECT * FROM users WHERE id = ?', [id]);
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID ไม่ถูกต้อง' });
+        }
+        const [results] = await conn.query('SELECT * FROM users WHERE id = ?', id);
         if (results.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
         }
         res.json(results[0]);
     } catch (error) {
-        console.error('❌ Error:', error.message);
-        res.status(500).json({
-            message: 'Something went wrong',
-            errorMessage: error.message
-        });
+        console.error('error: ', error.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้', errorMessage: error.message });
     }
 });
 
-// 📌 อัปเดตข้อมูลผู้ใช้
+// path: PUT /users/:id สำหรับแก้ไข users รายคน (ตาม id ที่บันทึกเข้าไป)
 app.put('/users/:id', async (req, res) => {
-    let id = parseInt(req.params.id);
-    let updateUser = req.body;
     try {
-        // ✅ ถ้า `interests` เป็น Array ให้แปลงเป็น String ก่อนอัปเดต
-        if (Array.isArray(updateUser.interests)) {
-            updateUser.interests = updateUser.interests.join(', ');
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID ไม่ถูกต้อง' });
         }
-
-        const [results] = await conn.query(
-            'UPDATE users SET ? WHERE id = ?',
-            [updateUser, id]
-        );
-
+        const updateUser = req.body;
+        const [results] = await conn.query('UPDATE users SET ? WHERE id = ?', [updateUser, id]);
         if (results.affectedRows === 0) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
         }
-
-        res.json({
-            message: '✅ Update user successfully',
-            data: updateUser
-        });
+        res.json({ message: 'แก้ไขข้อมูลผู้ใช้สำเร็จ', data: results });
     } catch (error) {
-        console.error('❌ Error updating user:', error.message);
-        res.status(500).json({
-            message: 'Something went wrong',
-            errorMessage: error.message
-        });
+        console.error('error: ', error.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการแก้ไขข้อมูลผู้ใช้', errorMessage: error.message });
     }
 });
 
-// 📌 ลบผู้ใช้
+// path: DELETE /users/:id สำหรับลบ users รายคน (ตาม id ที่บันทึกเข้าไป)
 app.delete('/users/:id', async (req, res) => {
     try {
-        let id = parseInt(req.params.id);
-        const [results] = await conn.query(
-            'DELETE FROM users WHERE id = ?', [id]
-        );
-
-        res.json({
-            message: '✅ Delete user successfully',
-            data: results
-        });
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID ไม่ถูกต้อง' });
+        }
+        const [results] = await conn.query('DELETE FROM users WHERE id = ?', id);
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
+        }
+        res.json({ message: 'ลบข้อมูลผู้ใช้สำเร็จ', data: results });
     } catch (error) {
-        console.error('❌ Error:', error.message);
-        res.status(500).json({
-            message: 'Something went wrong',
-            errorMessage: error.message
-        });
+        console.error('error: ', error.message);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบข้อมูลผู้ใช้', errorMessage: error.message });
     }
 });
 
-// 📌 เรียกใช้เซิร์ฟเวอร์
 app.listen(port, async () => {
     await initMySQL();
-    console.log(`✅ Http Server is running on port ${port}`);
+    console.log('Http Server is running on port ' + port);
 });

@@ -15,17 +15,17 @@
         
         <div class="flex form-input">
             <div class="header-form">ชื่อ</div>
-            <input class="form" name="firstname" type="text">
+            <input id="firstname" class="form" name="firstname" type="text">
         </div>
 
         <div class="flex form-input">
             <div class="header-form">นามสกุล</div>
-            <input class="form" name="lastname" type="text"> 
+            <input id="lastname" class="form" name="lastname" type="text"> 
         </div>
 
         <div class="flex form-input">
             <div class="header-form">อายุ</div>
-            <input class="form" type="number" name="age" min="1" max="100">
+            <input id="age" class="form" type="number" name="age" min="1" max="100">
         </div>
 
         <div class="flex gender form-input">
@@ -58,17 +58,16 @@
 
         <div class="form-input">
             คำอธิบาย
-            <textarea name="description"></textarea>
+            <textarea id="description" name="description"></textarea>
         </div>
 
-        <div class="message"></div> <!-- Ensure this element is present -->
+        <div id="message"></div>
 
         <div class="center"> 
             <button class="button" onclick="submitData()">ส่งข้อมูล</button>
         </div>    
     </div>
 
-    <!-- ย้าย <script> ไว้ที่นี่ -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="index.js"></script>
 </body>

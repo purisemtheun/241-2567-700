@@ -38,21 +38,24 @@
             text-align: center;
         }
         .button{
-            border: 0;
+            border: 1px solid blue;
             width: 50%;
             height: 40px;
-            background-color: blue;
+            
         }
         .massage {
             margin-top: 20px;
             padding: 10px;
             background-color: #01ffd9;
+            display: none;
         }
         .massage.success {
             background-color: #00ff51;
+            display: block;
         }
         .massage.danger {
             background-color: #ff0000;
+            display: block;
         }
         
         @media screen  and (max-width: 768px){
@@ -61,6 +64,9 @@
             }
             .header{
                 font-size: 24px;
+            }
+            .button{
+                width: 100%;
             }
         }
         
