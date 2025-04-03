@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <a href="index.html">Back to Register</a>
-    
-    <h1>User Management Page</h1>
+<body class="bg-green-900 min-h-screen flex flex-col items-center p-6">
+  <!-- Back link -->
+  <div class="w-full max-w-4xl mb-6">
+    <a href="index.html" class="text-green-200 hover:text-white hover:underline">← กลับไปหน้าลงทะเบียน</a>
+  </div>
 
-    <!-- ✅ ต้องมี div นี้ -->
-    <div id="users"></div>
+  <!-- Heading -->
+  <h1 class="text-4xl font-bold text-white text-center tracking-wide mb-6">
+    จัดการผู้ใช้งาน
+  </h1>
 
-    <!-- ✅ โหลด axios ก่อน user.js -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="user.js"></script> <!-- ✅ ตรวจสอบว่าไฟล์นี้อยู่ในตำแหน่งที่ถูกต้อง -->
+  <!-- User container -->
+  <div id="users" class="w-full max-w-4xl space-y-4">
+    <!-- การ์ดจะแสดงตรงนี้ -->
+  </div>
 </body>
 
+
+  <!--  Script -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="user.js"></script>
+</body>
 </html>

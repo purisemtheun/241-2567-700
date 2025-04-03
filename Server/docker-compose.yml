@@ -13,6 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
+    
       - weblab820
     restart: always
 
